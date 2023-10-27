@@ -10,3 +10,7 @@ export const entries = [
         title: "The Shawshank Redemption",
     }
 ];
+// TODO: right now any changes in schema mean changing a million things, how can i make this simpler?
+// also try connecting to sqlite. might require figuring out something like sequelize
+// idk if its worth it since i was planning on doing the backend in rust
+// https://sequelize.org/docs/v6/
