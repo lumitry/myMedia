@@ -1,4 +1,4 @@
-import { entries } from "./data.js";
+import { entries } from "../../lib/data.js";
 
 // Every page of your app can declare a load function in a +page.server.js file alongside the +page.svelte file.
 // As the file name suggests, this module only ever runs on the server, including for client-side navigations.

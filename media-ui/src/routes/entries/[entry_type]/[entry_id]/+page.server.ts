@@ -1,4 +1,4 @@
-import { entries } from "../../data.js";
+import { entries } from "../../../../lib/data.js";
 import { error } from "@sveltejs/kit";
 
 export function load({ params }) {
