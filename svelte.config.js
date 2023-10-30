@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static'; // tauri requires static site mode
 import { vitePreprocess } from '@sveltejs/kit/vite';
 import preprocessor from 'svelte-preprocess';
 
