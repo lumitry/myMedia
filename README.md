@@ -21,11 +21,15 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 1. Basic frontend that mostly just shows off data, maybe no editing yet
 2. Very basic backend that can serve data to frontend
 
+Bugs:
+
+- Opening an external link in Tauri opens it in the same window instead of a browser.
+
 ## Documentation
 
 ### Frontend
 
-Run with `npm run dev -- --open`
+Run with `pnpm tauri dev`
 
 ## Contributing & Code Standards
 
