@@ -25,8 +25,15 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 
 ### Frontend
 
-Run with `cd media-ui && npm run dev -- --open`
+Run with `npm run dev -- --open`
 
 ## Contributing & Code Standards
 
+Install js dependencies with `pnpm install`
+Then, install the tauri cli: `cargo install tauri-cli`
+
 <!-- TODO (...this) -->
+
+### Testing & Code Coverage
+
+8.5 seconds to run a single test? Playwright is just the best, isn't it :)
