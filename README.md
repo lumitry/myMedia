@@ -21,6 +21,10 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 - Custom "Views" based on filter chains with custom columns and sorting (would also work with custom SQL)
 
 ## Roadmap
+Bugs:
+
+- Opening an external link in Tauri opens it in the same window instead of a browser.
+
 
 (see the GitHub Project for a more detailed roadmap)
 
