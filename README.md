@@ -14,6 +14,26 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 
 <!-- TODO: also make a wiki in addition to the proper documentation -->
 
+### Potential Future Features
+
+- Vector search (v2.0.0)
+- Custom SQL queries? at your own risk, of course. (Similar to Obsidian Dataview)
+- Custom "Views" based on filter chains with custom columns and sorting (would also work with custom SQL)
+
+## Roadmap
+
+(see the GitHub Project for a more detailed roadmap)
+
+(these are STC)
+
+- v0.0.1: (pre-pre-alpha) Basic Tauri + Svelte app that can display data from an Sqlite database. Read-only
+- v0.1.0: Editable data (UI/UX should be good) and a browse page
+- v0.2.0: Basic search, filtering, and sorting
+- v0.3.0: Connect to APIs (OMDB, IMDB, TMDB, AniDB, etc.) to fetch data
+- v0.4.0: Per-episode/per-chapter notes and (potentially) ratings and tags for episodes/chapters
+- v0.5.0: Full-text search, maybe more advanced filtering
+- v0.6.0: Importing/Exporting data
+
 ## Priorities
 
 ### Sprint 1
