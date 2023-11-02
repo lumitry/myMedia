@@ -16,7 +16,6 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 
 ### Potential Future Features
 
-- Vector search (v2.0.0)
 - Custom SQL queries? at your own risk, of course. (Similar to Obsidian Dataview)
 - Custom "Views" based on filter chains with custom columns and sorting (would also work with custom SQL)
 
@@ -33,6 +32,8 @@ I have a lot of long-term planning done already, at least for a v1.0.0 release a
 - v0.4.0: Per-episode/per-chapter notes and (potentially) ratings and tags for episodes/chapters
 - v0.5.0: Full-text search, maybe more advanced filtering
 - v0.6.0: Importing/Exporting data
+- v1.0.0: Finalize UX, make sure docs are thorough, etc.
+- v2.0.0: Vector Search
 
 ## Priorities
 
