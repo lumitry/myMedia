@@ -48,17 +48,25 @@ Bugs:
 
 ## Documentation
 
-### Frontend
+### Installation
 
-Run with `pnpm tauri dev`
+<!-- TODO -->
+
+Note: Some features may require newer versions of [WebKit or WebView2](https://tauri.app/v1/references/webview-versions). I can't guarantee support for older operating systems.
+
+### Full Docs
+
+<!-- TODO; mkdocs? figure out some docs thing -->
 
 ## Contributing & Code Standards
 
 Install js dependencies with `pnpm install`
 Then, install the tauri cli: `cargo install tauri-cli`
 
-<!-- TODO (...this) -->
+Run with `pnpm tauri dev`
+
+<!-- TODO (making contrib guidelines and coding standards) -->
 
 ### Testing & Code Coverage
 
-8.5 seconds to run a single test? Playwright is just the best, isn't it :)
+~~8.5 seconds to run a single test? Playwright is just the best, isn't it :)~~
