@@ -103,4 +103,17 @@ mod test {
   fn test_greet() {
     assert_eq!(greet("World"), "Hello, World!");
   }
+
+  #[test]
+  fn test_get_entries() {
+    // a temporary test since get_entries is a temporary function
+    let entries = get_entries().unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(entries[0].entry_id, 1);
+    assert_eq!(entries[0].entry_name, "Test");
+    assert_eq!(entries[0].entry_type, 1);
+    assert_eq!(entries[1].entry_id, 2);
+    assert_eq!(entries[1].entry_name, "Test2");
+    assert_eq!(entries[1].entry_type, 2);
+  }
 }
