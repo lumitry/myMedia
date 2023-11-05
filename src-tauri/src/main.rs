@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::Serialize;
+use rusqlite::{params, Connection, Result};
 
 fn main() {
   tauri::Builder::default()
@@ -23,20 +24,79 @@ struct Entry {
   entry_type: i32,
 }
 
+// thanks tauri docs for this error handling code, never would have figured this out
+// create the error type that represents all errors possible in our program
+#[derive(Debug, thiserror::Error)]
+enum Error {
+  #[error(transparent)]
+  Io(#[from] std::io::Error),
+  #[error(transparent)]
+  Sqlite(#[from] rusqlite::Error),
+}
+
+// we must manually implement serde::Serialize
+impl serde::Serialize for Error {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::ser::Serializer,
+  {
+    serializer.serialize_str(self.to_string().as_ref())
+  }
+}
+
 #[tauri::command]
-fn get_entries() -> Vec<Entry> {
-  let mut entries: Vec<Entry> = Vec::new();
-  entries.push(Entry {
+fn get_entries() -> Result<Vec<Entry>, Error> {
+  println!("get_entries called");
+  // first, we need to connect to the database
+  let conn = Connection::open_in_memory()?;
+
+  // then we'll create the table
+  conn.execute(
+    "CREATE TABLE entries (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      type INTEGER NOT NULL
+    )",
+    (), // no params
+  )?;
+
+  // then we'll make some test entries
+  let test_entry_1 = Entry {
     entry_id: 1,
     entry_name: "Test".to_string(),
     entry_type: 1,
-  });
-  entries.push(Entry {
+  };
+  let test_entry_2 = Entry {
     entry_id: 2,
     entry_name: "Test2".to_string(),
     entry_type: 2,
-  });
-  entries
+  };
+
+  // then we'll insert them into the database
+  conn.execute(
+    "INSERT INTO entries (name, type) VALUES (?1, ?2);",
+    (&test_entry_1.entry_name, test_entry_1.entry_type),
+  )?;
+  conn.execute(
+    "INSERT INTO entries (name, type) VALUES (?1, ?2)",
+    (&test_entry_2.entry_name, test_entry_2.entry_type),
+  )?;
+
+  // then we'll query and return the entries
+  let mut stmt = conn.prepare("SELECT id, name, type FROM entries")?;
+
+  let entries = stmt
+    .query_map([], |row| {
+      Ok(Entry {
+        entry_id: row.get(0)?,
+        entry_name: row.get(1)?,
+        entry_type: row.get(2)?,
+      })
+    })?
+    .map(|entry| entry.unwrap())
+    .collect::<Vec<Entry>>();
+
+  Ok(entries)
 }
 
 #[cfg(test)]
