@@ -40,7 +40,8 @@ impl serde::Serialize for Error {
   where
     S: serde::ser::Serializer,
   {
-    serializer.serialize_str(self.to_string().as_ref())
+    println!("Error: {}", self.to_string());
+    return serializer.serialize_str(self.to_string().as_ref());
   }
 }
 
@@ -48,17 +49,12 @@ impl serde::Serialize for Error {
 fn get_entries() -> Result<Vec<Entry>, Error> {
   println!("get_entries called");
   // first, we need to connect to the database
-  let conn = Connection::open_in_memory()?;
+  // let conn = Connection::open_in_memory()?;
+  let conn = Connection::open("src/test/test.sqlite")?;
 
   // then we'll create the table
-  conn.execute(
-    "CREATE TABLE entries (
-      id INTEGER PRIMARY KEY,
-      name TEXT NOT NULL,
-      type INTEGER NOT NULL
-    )",
-    (), // no params
-  )?;
+  let sql = std::fs::read_to_string("src/db/db_schema.sql")?;
+  conn.execute_batch(&sql)?; // no params
 
   // then we'll make some test entries
   let test_entry_1 = Entry {
@@ -74,16 +70,16 @@ fn get_entries() -> Result<Vec<Entry>, Error> {
 
   // then we'll insert them into the database
   conn.execute(
-    "INSERT INTO entries (name, type) VALUES (?1, ?2);",
+    "INSERT INTO entries (title, media_type) VALUES (?1, ?2);",
     (&test_entry_1.entry_name, test_entry_1.entry_type),
   )?;
   conn.execute(
-    "INSERT INTO entries (name, type) VALUES (?1, ?2)",
+    "INSERT INTO entries (title, media_type) VALUES (?1, ?2)",
     (&test_entry_2.entry_name, test_entry_2.entry_type),
   )?;
 
   // then we'll query and return the entries
-  let mut stmt = conn.prepare("SELECT id, name, type FROM entries")?;
+  let mut stmt = conn.prepare("SELECT entry_id, title, media_type FROM entries")?;
 
   let entries = stmt
     .query_map([], |row| {

@@ -11,7 +11,7 @@
 
     async function get_entries() {
         let entries_orig = await invoke('get_entries');
-        // entries = entries_orig;
+        entries = '';
         for (let entry in entries_orig) {
             entries += entries_orig[entry].entry_name + '\n';
         }

@@ -1,22 +1,25 @@
+DROP TABLE IF EXISTS entries; -- TODO remove this for production, only using it for testing
+-- TODO how to handle schema migrations? there are going to be A LOT of changes, especially for the first few months. right now i'm just dropping the tables but that won't work once there's real data in there.
+
 CREATE TABLE IF NOT EXISTS media_types (
     media_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE
 );
 
-INSERT INTO media_types (name) VALUES ("tv"), ("anime_tv"), ("movie"), ("anime_movie"); -- ("game"), ("board_game"), ("video_game"), ("book"), ("comic"), ("manga"), ("novel"), ("light_novel"), ("music");
+INSERT OR IGNORE INTO media_types (name) VALUES ("tv"), ("anime_tv"), ("movie"), ("anime_movie");
+-- ("game"), ("board_game"), ("video_game"), ("book"), ("comic"), ("manga"), ("novel"), ("light_novel"), ("music");
 -- media types allow you to know which table to look for the rest of the entry's metadata in. for example, if the media type is "anime_tv", you know to look in the "anime_tv_shows" table for the rest of the metadata.
 
 CREATE TABLE IF NOT EXISTS entries (
     entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     summary TEXT, -- summary of the series
-    media_type INTEGER NOT NULL REFERENCES media_types(id),
+    media_type INTEGER NOT NULL REFERENCES media_types(media_type_id),
     tags TEXT, -- json string
     settings TEXT, -- json string
     characters INTEGER[], -- references to characters table
     series INTEGER[], -- references to series table; an entry can be a part of multiple series, especially when they're nested
-    order NUMERIC, -- order within series. TODO how to handle this for entries with multiple series?
-    rating INTEGER REFERENCES ratings(rating_id),
+    order_in_series NUMERIC, -- order within series. TODO how to handle this for entries with multiple series?\nrating INTEGER REFERENCES ratings(rating_id),
     notes TEXT, -- user's notes about the series
     streaming_url TEXT, -- url to stream the series
     file_path TEXT, -- path to the local file/folder
@@ -31,20 +34,27 @@ CREATE TABLE IF NOT EXISTS tv_shows (
     -- TODO add more columns
 );
 
+CREATE TABLE IF NOT EXISTS animation_studios (
+    studio_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS anime_tv_shows (
     anime_tv_show_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    studio_id INTEGER REFERENCES animation_studios(studio_id)
     -- tv_show_id INTEGER NOT NULL, -- TODO join them together to get all data, i guess? then you could just have an anime table that contains both tv and movies maybe, since they'd have similar extra metadata. consider this.
     -- FOREIGN KEY (tv_show_id) REFERENCES tv_shows(id)
-    -- TODO add more columns
+    --TODO add more columns
 );
 
 CREATE TABLE IF NOT EXISTS movies (
-    movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    movie_id INTEGER PRIMARY KEY AUTOINCREMENT
     -- TODO add more columns
 );
 
 CREATE TABLE IF NOT EXISTS anime_movies (
     anime_movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    studio_id INTEGER REFERENCES animation_studios(studio_id)
     -- movie_id INTEGER NOT NULL,
     -- FOREIGN KEY (movie_id) REFERENCES movies(id)
     -- TODO add more columns
@@ -139,46 +149,43 @@ CREATE TABLE IF NOT EXISTS characters (
     character_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     rating INTEGER REFERENCES ratings(id), -- the user's rating of the character
-    tags TEXT, -- json string
+    tags TEXT -- json string
     -- TODO add more columns
 );
 
 CREATE TABLE IF NOT EXISTS series (
     series_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    rating INTEGER REFERENCES ratings(id), -- the user's rating of the series as a whole
+    rating INTEGER REFERENCES ratings(id) -- the user's rating of the series as a whole
     -- TODO add more columns
 );
 
 CREATE TABLE IF NOT EXISTS history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    entry_id INTEGER NOT NULL, -- can be changed to an episode key if needed
-    FOREIGN KEY (entry_id) REFERENCES entries(id),
+    entry_id INTEGER NOT NULL REFERENCES entries(id), -- can be changed to an episode key if needed
     date_started TIMESTAMP,
     date_finished TIMESTAMP,
     watched_count INTEGER, -- how many episodes/chapters have been watched/read
     speed NUMERIC, -- how fast the user is watching, for criminals like me who watch at 2x speed
     rating INTEGER REFERENCES ratings(id), -- for this specific watch so we can see how the user's opinion changes over time
-    notes TEXT, -- user's notes about this specific watch
+    notes TEXT -- user's notes about this specific watch
     -- TODO add more columns
-)
+);
 
 CREATE TABLE IF NOT EXISTS ratings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     rating NUMERIC NOT NULL CHECK (rating >= 0 AND rating <= 1), -- user's rating of the series out of 1 on a floating-point scale. can be handled differently by the frontend, e.g. if you only want to use 5 stars or 10
     custom_rating TEXT, -- json for user's custom ratings; see docs
-    notes TEXT, -- user's notes about the entry
+    notes TEXT -- user's notes about the entry
     -- TODO add more columns
-)
+);
 
 CREATE TABLE IF NOT EXISTS alternate_title_types (
     type_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL UNIQUE
-)
+);
 
-INSERT INTO alternate_title_types (title) VALUES ("synonym"), ("abbreviation"), ("acronym"), ("nickname"), ("misspelling"), ("romanization"), ("translation"), ("fan_translation"), ("common_title"), ("other");
-
-INSERT INTO alternate_title_types (title) VALUES
+INSERT OR IGNORE INTO alternate_title_types (title) VALUES
     ("official"), -- the original title; if it's japanese media, this is probably kanji, for example
     ("official_romanized"), -- the official romanized (but not translated) title
     ("official_translation"), -- the official translated title
@@ -191,12 +198,11 @@ INSERT INTO alternate_title_types (title) VALUES
 
 CREATE TABLE IF NOT EXISTS alternate_titles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    entry_id INTEGER NOT NULL,
-    FOREIGN KEY (entry_id) REFERENCES entries(id),
+    entry_id INTEGER NOT NULL REFERENCES entries(entry_id), -- the entry this alternate title applies to
     title TEXT NOT NULL,
-    type_id INTEGER NOT NULL REFERENCES alternate_title_types(id)
+    type_id INTEGER NOT NULL REFERENCES alternate_title_types(type_id)
     -- see ALTERNATE_TITLES.md for more info; these are mostly for anime and other foreign media.
-)
+);
 
 -- TODO how can we use views here?
 -- TODO how can we use triggers here?
