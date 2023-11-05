@@ -1,11 +1,11 @@
 [package]
-name = "app"
-version = "0.1.0"
+name = "my_media"
+version = "0.0.1"
 description = "Media Tracking for people who hate tracking"
 authors = ["you"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "my_media"
 edition = "2021"
 rust-version = "1.60"
 
