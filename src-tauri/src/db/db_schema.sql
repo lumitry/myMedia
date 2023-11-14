@@ -1,20 +1,17 @@
 DROP TABLE IF EXISTS entries; -- TODO remove this for production, only using it for testing
+-- DROP TABLE IF EXISTS media_types; -- TODO remove this for production, only using it for testing
 -- TODO how to handle schema migrations? there are going to be A LOT of changes, especially for the first few months. right now i'm just dropping the tables but that won't work once there's real data in there.
+-- might be worth either looking into migration libraries or doing it on my own. maybe instead of just calling this big file, creating any tables with code that way we can use rich if statements and so on.
 
-CREATE TABLE IF NOT EXISTS media_types (
-    media_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
-);
-
-INSERT OR IGNORE INTO media_types (name) VALUES ("tv"), ("anime_tv"), ("movie"), ("anime_movie");
--- ("game"), ("board_game"), ("video_game"), ("book"), ("comic"), ("manga"), ("novel"), ("light_novel"), ("music");
--- media types allow you to know which table to look for the rest of the entry's metadata in. for example, if the media type is "anime_tv", you know to look in the "anime_tv_shows" table for the rest of the metadata.
+-- TODO pragma version statement
 
 CREATE TABLE IF NOT EXISTS entries (
     entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     summary TEXT, -- summary of the series
     media_type INTEGER NOT NULL REFERENCES media_types(media_type_id),
+    release_date_start TIMESTAMP, -- when the entry started its release/season/syndication/etc.
+    release_date_end TIMESTAMP, -- when the entry ended its release/etc.
     tags TEXT, -- json string
     settings TEXT, -- json string
     characters INTEGER[], -- references to characters table

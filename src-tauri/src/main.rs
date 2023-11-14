@@ -2,7 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::Serialize;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Connection, Result};
+use crate::tauri_error::Error;
+use crate::db::media_types;
+
+pub mod db;
+pub mod tauri_error;
 
 fn main() {
   tauri::Builder::default()
@@ -22,27 +27,7 @@ struct Entry {
   entry_id: i32,
   entry_name: String,
   entry_type: i32,
-}
-
-// thanks tauri docs for this error handling code, never would have figured this out
-// create the error type that represents all errors possible in our program
-#[derive(Debug, thiserror::Error)]
-enum Error {
-  #[error(transparent)]
-  Io(#[from] std::io::Error),
-  #[error(transparent)]
-  Sqlite(#[from] rusqlite::Error),
-}
-
-// we must manually implement serde::Serialize
-impl serde::Serialize for Error {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: serde::ser::Serializer,
-  {
-    println!("Error: {}", self.to_string());
-    return serializer.serialize_str(self.to_string().as_ref());
-  }
+  // TODO obviously update this struct to match the database schema
 }
 
 #[tauri::command]
@@ -50,10 +35,12 @@ fn get_entries() -> Result<Vec<Entry>, Error> {
   println!("get_entries called");
   // first, we need to connect to the database
   // let conn = Connection::open_in_memory()?;
-  let conn = Connection::open("src/test/test.sqlite")?;
+  let conn = Connection::open("src/test/test.sqlite")?; // TODO use globals for this
+
+  media_types::make_media_types(&conn)?;
 
   // then we'll create the table
-  let sql = std::fs::read_to_string("src/db/db_schema.sql")?;
+  let sql = std::fs::read_to_string("src/db/db_schema.sql")?; // TODO use globals for this especially
   conn.execute_batch(&sql)?; // no params
 
   // then we'll make some test entries
@@ -94,6 +81,16 @@ fn get_entries() -> Result<Vec<Entry>, Error> {
 
   Ok(entries)
 }
+
+// fn create_tables
+// TODO: create a function that creates the tables if they don't exist
+
+// TODO: create another file for the database functions maybe, don't just have some huge main file
+// also maybe learn proper rust conventions
+// and make sure to write good unit tests
+
+// fn clear_tables
+// essentially just wipes out the test.sqlite file
 
 #[cfg(test)]
 mod test {
