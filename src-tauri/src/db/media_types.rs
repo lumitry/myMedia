@@ -2,8 +2,11 @@
 
 use rusqlite::{Connection, params};
 use crate::tauri_error::Error;
+use serde::Serialize;
 
 // create struct for media types in-memory object representation
+
+#[derive(Serialize, Debug)]
 pub struct MediaType {
     pub media_type_id: i32,
     pub name: String,
@@ -74,6 +77,24 @@ pub fn get_media_type_by_id(conn: &Connection, id: i32) -> Result<MediaType, Err
     Ok(media_type[0].clone())
 }
 
+pub fn get_media_type_by_name(conn: &Connection, name: &str) -> Result<MediaType, Error> {
+    println!("get_media_type_by_name called");
+
+    let mut stmt = conn.prepare("SELECT media_type_id, name FROM media_types WHERE name = ?1")?;
+
+    let media_type = stmt
+        .query_map(params![name], |row| {
+        Ok(MediaType {
+            media_type_id: row.get(0)?,
+            name: row.get(1)?,
+        })
+        })?
+        .map(|entry| entry.unwrap())
+        .collect::<Vec<MediaType>>();
+
+    Ok(media_type[0].clone())
+}
+
 #[cfg(test)]
 mod test{
     use super::*;
@@ -102,5 +123,13 @@ mod test{
         let conn = Connection::open_in_memory().unwrap();
         let media_type = get_media_type_by_id(&conn, 5);
         assert!(media_type.is_err());
+    }
+
+    #[test]
+    fn test_get_media_type_by_name() {
+        let conn = Connection::open_in_memory().unwrap();
+        let types = make_media_types(&conn).unwrap();
+        let media_type = get_media_type_by_name(&conn, &types[0].name).unwrap();
+        assert_eq!(media_type.name, "tv");
     }
 }

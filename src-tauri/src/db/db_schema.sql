@@ -5,13 +5,24 @@ DROP TABLE IF EXISTS entries; -- TODO remove this for production, only using it 
 
 -- TODO pragma version statement
 
+CREATE TABLE IF NOT EXISTS ratings (
+    rating_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rating NUMERIC NOT NULL CHECK (rating >= 0 AND rating <= 1), -- user's rating of the series out of 1 on a floating-point scale. can be handled differently by the frontend, e.g. if you only want to use 5 stars or 10
+    custom_rating TEXT, -- json for user's custom ratings; see docs
+    notes TEXT -- user's notes about the entry, maybe should be a blob idk
+    -- TODO add more columns ??
+);
+
 CREATE TABLE IF NOT EXISTS entries (
     entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
+    cover_photo TEXT, -- uri to cover art (i.e. poster/book cover/album art)
+    banner_image TEXT, -- uri to banner image (like on Anilist, or in Notion)
     summary TEXT, -- summary of the series
     media_type INTEGER NOT NULL REFERENCES media_types(media_type_id),
-    release_date_start TIMESTAMP, -- when the entry started its release/season/syndication/etc.
-    release_date_end TIMESTAMP, -- when the entry ended its release/etc.
+    release_date_start TEXT, -- JSON string (not timestamp to support ambiguity); when the entry started its release/season/syndication/etc.
+    release_date_end TEXT, -- JSON string; when the entry ended its release/etc.
+    rating INTEGER REFERENCES ratings(rating_id), -- the user's rating of the entry
     tags TEXT, -- json string
     settings TEXT, -- json string
     characters INTEGER[], -- references to characters table
@@ -20,9 +31,9 @@ CREATE TABLE IF NOT EXISTS entries (
     notes TEXT, -- user's notes about the series
     streaming_url TEXT, -- url to stream the series
     file_path TEXT, -- path to the local file/folder
-    date_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    -- TODO add more columns
+    date_modified TEXT -- not sure how to do a default for the json strings
+    date_created TEXT
+    -- TODO add more columns?
 );
 
 CREATE TABLE IF NOT EXISTS tv_shows (
@@ -135,9 +146,10 @@ CREATE TABLE IF NOT EXISTS tags (
     tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
     parent_tags INTEGER[], -- references to tags table
     name TEXT NOT NULL UNIQUE,
-    rating INTEGER REFERENCES ratings(id), -- the user's rating of the tag
+    rating INTEGER REFERENCES ratings(rating_id), -- the user's rating of the tag
     description TEXT, -- user's description of the tag
-    color TEXT -- hex color code
+    color TEXT, -- hex color code
+    related_tags INTEGER[] -- references to tags table
     -- photo_id INTEGER REFERENCES photos(id), -- photo of the tag; for now i'm not going to implement this
     -- TODO add more columns
 );
@@ -145,7 +157,7 @@ CREATE TABLE IF NOT EXISTS tags (
 CREATE TABLE IF NOT EXISTS characters (
     character_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    rating INTEGER REFERENCES ratings(id), -- the user's rating of the character
+    rating INTEGER REFERENCES ratings(rating_id), -- the user's rating of the character
     tags TEXT -- json string
     -- TODO add more columns
 );
@@ -153,27 +165,19 @@ CREATE TABLE IF NOT EXISTS characters (
 CREATE TABLE IF NOT EXISTS series (
     series_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    rating INTEGER REFERENCES ratings(id) -- the user's rating of the series as a whole
+    rating INTEGER REFERENCES ratings(rating_id) -- the user's rating of the series as a whole
     -- TODO add more columns
 );
 
 CREATE TABLE IF NOT EXISTS history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_id INTEGER NOT NULL REFERENCES entries(id), -- can be changed to an episode key if needed
-    date_started TIMESTAMP,
-    date_finished TIMESTAMP,
+    date_started TEXT,
+    date_finished TEXT,
     watched_count INTEGER, -- how many episodes/chapters have been watched/read
     speed NUMERIC, -- how fast the user is watching, for criminals like me who watch at 2x speed
-    rating INTEGER REFERENCES ratings(id), -- for this specific watch so we can see how the user's opinion changes over time
+    rating INTEGER REFERENCES ratings(rating_id), -- for this specific watch so we can see how the user's opinion changes over time
     notes TEXT -- user's notes about this specific watch
-    -- TODO add more columns
-);
-
-CREATE TABLE IF NOT EXISTS ratings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    rating NUMERIC NOT NULL CHECK (rating >= 0 AND rating <= 1), -- user's rating of the series out of 1 on a floating-point scale. can be handled differently by the frontend, e.g. if you only want to use 5 stars or 10
-    custom_rating TEXT, -- json for user's custom ratings; see docs
-    notes TEXT -- user's notes about the entry
     -- TODO add more columns
 );
 
